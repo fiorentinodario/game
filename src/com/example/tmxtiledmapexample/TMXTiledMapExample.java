@@ -8,7 +8,7 @@ import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
-import org.andengine.entity.modifier.LoopEntityModifier;
+
 import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.scene.Scene;
@@ -35,6 +35,8 @@ import org.andengine.engine.handler.physics.PhysicsHandler;
 import org.andengine.opengl.texture.region.ITextureRegion;
 
 import android.opengl.GLES20;
+//import android.widget.Toast;
+
 
 
 
@@ -68,7 +70,10 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 	private BitmapTextureAtlas mOnScreenControlTexture;
 	private ITextureRegion mOnScreenControlBaseTextureRegion;
 	private ITextureRegion mOnScreenControlKnobTextureRegion;
+	
+	private int pWaypointIndex;
     //////////////////////////////////
+	//
 	
 	
 	// ===========================================================
@@ -152,17 +157,23 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 
 		/* Create the sprite and add it to the scene. */
 		final AnimatedSprite player = new AnimatedSprite(centerX, centerY, this.mPlayerTextureRegion, this.getVertexBufferObjectManager());
+		
+		////////////////////////////////////////////
+		final PhysicsHandler physicsHandler = new PhysicsHandler(player);
+		player.registerUpdateHandler(physicsHandler);
+		////////////////////////////////////////////
+		
 		this.mBoundChaseCamera.setChaseEntity(player);
 
 	/*	final Path path = new Path(5).to(0, 160).to(0, 500).to(600, 500).to(600, 160).to(0, 160); 
 
-	//	player.registerEntityModifier(new LoopEntityModifier(new PathModifier(30, path, null, new IPathModifierListener() {
-			@Override
+	//	player.registerEntityModifier(new LoopEntityModifier(new PathModifier(30, path, null, new IPathModifierListener() {  
+			//@Override
 			public void onPathStarted(final PathModifier pPathModifier, final IEntity pEntity) {
 
-			} 
+			}  
 
-			@Override
+			//@Override
 			public void onPathWaypointStarted(final PathModifier pPathModifier, final IEntity pEntity, final int pWaypointIndex) {
 				switch(pWaypointIndex) {
 					case 0:
@@ -178,9 +189,9 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 						player.animate(new long[]{200, 200, 200}, 9, 11, true);
 						break;
 				}
-			}
+			}*/
 
-			@Override
+		/*	@Override
 			public void onPathWaypointFinished(final PathModifier pPathModifier, final IEntity pEntity, final int pWaypointIndex) {
 
 			}*/
@@ -188,12 +199,12 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 		//	@Override
 		//	public void onPathFinished(final PathModifier pPathModifier, final IEntity pEntity) {
 
-		//	}
+	//}
 
 	//	}))); 
 		
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		final PhysicsHandler physicsHandler = new PhysicsHandler(player);
+	
 		final AnalogOnScreenControl analogOnScreenControl = new AnalogOnScreenControl
 				(0, CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight(), 
 						this.mBoundChaseCamera, this.mOnScreenControlBaseTextureRegion, 
@@ -203,7 +214,63 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
 				physicsHandler.setVelocity(pValueX * 100, pValueY * 100);
-			
+				
+				//_______________________
+				/*	final Path path = new Path(5).to(0, 160).to(0, 500).to(600, 500).to(600, 160).to(0, 160); 
+
+				//	player.registerEntityModifier(new LoopEntityModifier(new PathModifier(30, path, null, new IPathModifierListener() {  
+						//@Override
+						public void onPathStarted(final PathModifier pPathModifier, final IEntity pEntity) {
+
+						} 
+
+						//@Override
+						public void onPathWaypointStarted(final PathModifier pPathModifier, final IEntity pEntity, final int pWaypointIndex) { */
+				
+
+				
+				int frazione = (int) (pValueX/pValueY);
+				if(pValueX >0 && frazione != 0){
+					pWaypointIndex = 1;//destra
+				}else if(pValueX <0 && frazione != 0){
+					pWaypointIndex = 3;	//sinistra
+				}else if(pValueY >0 && frazione == 0){
+					pWaypointIndex = 0;//frotale
+				}else if(pValueY<0 && frazione == 0){
+					pWaypointIndex = 2;	//retro
+				} 
+
+				
+				
+				
+							switch(pWaypointIndex) {
+								case 0:
+									player.animate(new long[]{200, 200, 200}, 6, 8, true); //frotale
+									break;
+								case 1:
+									player.animate(new long[]{200, 200, 200}, 3, 5, true); //destra
+									break;
+								case 2:
+									player.animate(new long[]{200, 200, 200}, 0, 2, true); //retro
+									break;
+								case 3:
+									player.animate(new long[]{200, 200, 200}, 9, 11, true); //sinistra
+									break;
+							}
+						
+
+					/*	@Override
+						public void onPathWaypointFinished(final PathModifier pPathModifier, final IEntity pEntity, final int pWaypointIndex) {
+
+						}*/
+
+					//	@Override
+					//	public void onPathFinished(final PathModifier pPathModifier, final IEntity pEntity) {
+
+				//}
+
+				//	}))); 
+				//_______________________
 			}
 
 			@Override
