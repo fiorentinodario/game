@@ -1,4 +1,4 @@
-package com.example.tmxtiledmapexample;
+package com.dario.aftertheordeal;
 
 import org.andengine.engine.camera.BoundCamera;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
@@ -35,19 +35,16 @@ import org.andengine.engine.handler.physics.PhysicsHandler;
 import org.andengine.opengl.texture.region.ITextureRegion;
 
 import android.opengl.GLES20;
-//import android.widget.Toast;
-
-
 
 
 /**
- * (c) 2010 Nicolas Gramlich
- * (c) 2011 Zynga
+ * (c) 2012 Dario Fiorentino
+ *  
  *
- * @author Nicolas Gramlich
- * @since 13:58:48 - 19.07.2010
+ * @author Dario Fiorentino
+ * @since 14:46:48 - 10.08.2012
  */
-public class TMXTiledMapExample extends SimpleBaseGameActivity {
+public class Main extends SimpleBaseGameActivity {
 	// ===========================================================
 	// Constants
 	// ===========================================================
@@ -65,70 +62,62 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 	private TiledTextureRegion mPlayerTextureRegion;
 	private TMXTiledMap mTMXTiledMap;
 	protected int mCactusCount;
-	
-	//////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private BitmapTextureAtlas mOnScreenControlTexture;
 	private ITextureRegion mOnScreenControlBaseTextureRegion;
 	private ITextureRegion mOnScreenControlKnobTextureRegion;
 	
 	private int pWaypointIndex;
-    //////////////////////////////////
-	//
 	
-	
-	// ===========================================================
-	// Constructors
-	// ===========================================================
+	private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
-
-	// ===========================================================
-	// Methods for/from SuperClass/Interfaces
-	// ===========================================================
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
-		//Toast.makeText(this, "i passi saranno evidenziati", Toast.LENGTH_LONG).show();
-
+		
 		this.mBoundChaseCamera = new BoundCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-
 		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), this.mBoundChaseCamera);
 	}
+	
+	
+	
+	
+	
 
 	@Override
 	public void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 72, 128, TextureOptions.DEFAULT);
 		this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png", 0, 0, 3, 4);
-
 		this.mBitmapTextureAtlas.load();
 		
-		/////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 128, TextureOptions.BILINEAR);
 		this.mOnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mOnScreenControlTexture, this, "onscreen_control_base.png", 0, 0);
 		this.mOnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
 		this.mOnScreenControlTexture.load();
-		/////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
 	}
+	
+	
+	
 
 	@Override
 	public Scene onCreateScene() {
 		
 		this.mEngine.registerUpdateHandler(new FPSLogger());
-
 		final Scene scene = new Scene();
-
 		try {
 			final TMXLoader tmxLoader = new TMXLoader(this.getAssets(), this.mEngine.getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, this.getVertexBufferObjectManager(), new ITMXTilePropertiesListener() {
 				@Override
 				public void onTMXTileWithPropertiesCreated(final TMXTiledMap pTMXTiledMap, final TMXLayer pTMXLayer, final TMXTile pTMXTile, final TMXProperties<TMXTileProperty> pTMXTileProperties) {
 					/* We are going to count the tiles that have the property "cactus=true" set. */
 					if(pTMXTileProperties.containsTMXProperty("cactus", "true")) {
-						TMXTiledMapExample.this.mCactusCount++;
+						Main.this.mCactusCount++;
 					}
 				}
 			});
@@ -137,7 +126,7 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 			this.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-			//		Toast.makeText(TMXTiledMapExample.this, "Cactus count in this TMXTiledMap: " + TMXTiledMapExample.this.mCactusCount, Toast.LENGTH_LONG).show();
+			
 				}
 			});
 		} catch (final TMXLoadException e) {
@@ -147,21 +136,21 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 		final TMXLayer tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);
 		scene.attachChild(tmxLayer);
 
-		/* Make the camera not exceed the bounds of the TMXEntity. */
+		/* per fare in modo che la camera non superi TMXTiledMap */
 		this.mBoundChaseCamera.setBounds(0, 0, tmxLayer.getHeight(), tmxLayer.getWidth());
 		this.mBoundChaseCamera.setBoundsEnabled(true);
 
-		/* Calculate the coordinates for the face, so its centered on the camera. */
+		/* per calcolare le coordinate del player per centrarlo alla camera */
 		final float centerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getWidth()) / 2;
 		final float centerY = (CAMERA_HEIGHT - this.mPlayerTextureRegion.getHeight()) / 2;
 
-		/* Create the sprite and add it to the scene. */
+		/* creare il player. */
 		final AnimatedSprite player = new AnimatedSprite(centerX, centerY, this.mPlayerTextureRegion, this.getVertexBufferObjectManager());
 		
-		////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		final PhysicsHandler physicsHandler = new PhysicsHandler(player);
 		player.registerUpdateHandler(physicsHandler);
-		////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
 		this.mBoundChaseCamera.setChaseEntity(player);
 
@@ -203,8 +192,9 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 
 	//	}))); 
 		
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////  (controller sinistro). /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		final AnalogOnScreenControl analogOnScreenControl = new AnalogOnScreenControl
 				(0, CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight(), 
 						this.mBoundChaseCamera, this.mOnScreenControlBaseTextureRegion, 
@@ -216,18 +206,8 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 				physicsHandler.setVelocity(pValueX * 100, pValueY * 100);
 				
 				//_______________________
-				/*	final Path path = new Path(5).to(0, 160).to(0, 500).to(600, 500).to(600, 160).to(0, 160); 
 
-				//	player.registerEntityModifier(new LoopEntityModifier(new PathModifier(30, path, null, new IPathModifierListener() {  
-						//@Override
-						public void onPathStarted(final PathModifier pPathModifier, final IEntity pEntity) {
-
-						} 
-
-						//@Override
-						public void onPathWaypointStarted(final PathModifier pPathModifier, final IEntity pEntity, final int pWaypointIndex) { */
 				
-
 				
 				int frazione = (int) (pValueX/pValueY);
 				if(pValueX >0 && frazione != 0){
@@ -238,61 +218,84 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 					pWaypointIndex = 0;//frotale
 				}else if(pValueY<0 && frazione == 0){
 					pWaypointIndex = 2;	//retro
-				} 
+				}
 
-				
-				
-				
-							switch(pWaypointIndex) {
-								case 0:
-									player.animate(new long[]{200, 200, 200}, 6, 8, true); //frotale
-									break;
-								case 1:
-									player.animate(new long[]{200, 200, 200}, 3, 5, true); //destra
-									break;
-								case 2:
-									player.animate(new long[]{200, 200, 200}, 0, 2, true); //retro
-									break;
-								case 3:
-									player.animate(new long[]{200, 200, 200}, 9, 11, true); //sinistra
-									break;
-							}
-						
+				switch(pWaypointIndex) {
+					case 0:
+						player.animate(new long[]{50, 50, 50},6,8, false);//frontale
+						break;
+					case 1:
+						player.animate(new long[]{50, 50, 50}, 3, 5, false); //destra
+						break;
+					case 2:
+						player.animate(new long[]{50, 50, 50}, 0, 2, false); //retro
+						break;
+					case 3:
+						player.animate(new long[]{50, 50, 50}, 9, 11, false); //sinistra
+						break;
+					
+				}
 
-					/*	@Override
-						public void onPathWaypointFinished(final PathModifier pPathModifier, final IEntity pEntity, final int pWaypointIndex) {
-
-						}*/
-
-					//	@Override
-					//	public void onPathFinished(final PathModifier pPathModifier, final IEntity pEntity) {
-
-				//}
-
-				//	}))); 
 				//_______________________
 			}
 
 			@Override
-			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
-				player.registerEntityModifier(new SequenceEntityModifier(new ScaleModifier(0.25f, 1, 2), new ScaleModifier(0.25f, 2, 1))); //0.25f, 1, 1.5f), new ScaleModifier(0.25f, 1.5f, 1
+			public void onControlClick(
+					AnalogOnScreenControl pAnalogOnScreenControl) {
+				// TODO Auto-generated method stub
 				
 			}
-			
-			
 
 		});
+
 		analogOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-		analogOnScreenControl.getControlBase().setAlpha(0.5f);
+		analogOnScreenControl.getControlBase().setAlpha(0.2f);
 		analogOnScreenControl.getControlBase().setScaleCenter(0, 128);
 		analogOnScreenControl.getControlBase().setScale(1.25f);
 		analogOnScreenControl.getControlKnob().setScale(1.25f);
+		analogOnScreenControl.getControlKnob().setAlpha(0.5f);
 		analogOnScreenControl.refreshControlKnobPosition();
 		scene.setChildScene(analogOnScreenControl);
+		
+		
+		
+		//  (controller destro). 
+		// final float x1 = 0;
+		final float y1 = CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight();
+		final float y2 = (this.mPlaceOnScreenControlsAtDifferentVerticalLocations) ? 0 : y1;
+		final float x2 = CAMERA_WIDTH - this.mOnScreenControlBaseTextureRegion.getWidth(); 
+		final AnalogOnScreenControl rotationOnScreenControl = new AnalogOnScreenControl
+				(x2, y2, 
+						this.mBoundChaseCamera, this.mOnScreenControlBaseTextureRegion, 
+						this.mOnScreenControlKnobTextureRegion, 0.1f, 200, 
+						this.getVertexBufferObjectManager(), 
+						new IAnalogOnScreenControlListener() {
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			@Override
+			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
+				player.registerEntityModifier(new SequenceEntityModifier(new ScaleModifier(0.25f, 1, 2), new ScaleModifier(0.25f, 2, 1))); //0.25f, 1, 1.5f), new ScaleModifier(0.25f, 1.5f, 1
+			}
+
+			@Override
+			public void onControlChange(
+					BaseOnScreenControl pBaseOnScreenControl, float pValueX,
+					float pValueY) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			
+		});
+		rotationOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		rotationOnScreenControl.getControlBase().setAlpha(0f);
+		rotationOnScreenControl.getControlKnob().setAlpha(0.5f);
 		
 		
+		analogOnScreenControl.setChildScene(rotationOnScreenControl);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 		
 
 		/* Now we are going to create a rectangle that will  always highlight the tile below the feet of the pEntity. */
@@ -318,17 +321,12 @@ public class TMXTiledMapExample extends SimpleBaseGameActivity {
 			}
 		});
 		scene.attachChild(player);
-		
-		
-
 		return scene;
 	}
+	
+	
+	
 
-	// ===========================================================
-	// Methods
-	// ===========================================================
 
-	// ===========================================================
-	// Inner and Anonymous Classes
-	// ===========================================================
+
 }
