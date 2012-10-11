@@ -13,4 +13,18 @@
    eJztluFOwjAQgKtoDKKCIDGKMt2EIAjx/Z/OXtYmTXPt7uitDLMfXwZdO77ecbeWSqnSo9KMPb41WyI7ZD32HJh3H5i3NPhuIb82GEXu9X44L5pXw0Jz3TG/T+93li35XWmeI/uX8tuauStn3Y+Tgxhlw/0FsneuH7YvKarer/f7J36c92uM0vs+VXVvsDW9dz5z/DgMkbGJ5sM8E64PhNzk9LvT3DjAucT28C74YUxU+B3VBT8b05T4FYY1A6pfU+3tmH7uNebM9QtBOf+NifFz5+T2A349CmTM8qjqviYBpz5CPj5SMYqRUr85/TZHrL3QXAowIOR340D1g/q4TeBJMzex5fhRHVP9RuYZFD/rWDAcJf0OBD8sjiFP+O+9Z45fyLFAxlJjZ4EeOovkCPOjuEr5QR4GCX6hnMO+5yfKb8zPzfUp6oMTw9z9heuZ6vem6h4g7Qc5/lJy55dZC/GrjljbRMyPeo6wjufgRz1HpND7yfj9ASsqijs=
   </data>
  </layer>
+ <objectgroup name="Livello di Oggetti 1" width="40" height="40">
+ <properties>
+    <property name="wall" value="true"/>
+   </properties>
+  <object x="510" y="204" width="246" height="9"/>
+  <object x="749" y="209" width="8" height="195"/>
+  <object x="670" y="398" width="87" height="6"/>
+  <object x="77" y="397" width="562" height="6"/>
+  <object x="181" y="205" width="298" height="7"/>
+  <object x="77" y="208" width="6" height="190"/>
+  <object x="63" y="208" width="18" height="4"/>
+  <object x="174" y="0" width="8" height="210"/>
+  <object x="2" y="207" width="28" height="7"/>
+ </objectgroup>
 </map>
