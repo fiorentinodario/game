@@ -1,25 +1,29 @@
 package com.dario.aftertheordeal;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.andengine.engine.camera.BoundCamera;
-import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.DigitalOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl.IOnScreenControlListener;
-import org.andengine.engine.handler.IUpdateHandler;
+//import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 
-import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.ScaleModifier;
-import org.andengine.entity.modifier.SequenceEntityModifier;
+
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.Shape;
 import org.andengine.entity.sprite.AnimatedSprite;
-import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
+import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
 import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
+import org.andengine.extension.tmx.TMXObject;
+import org.andengine.extension.tmx.TMXObjectGroup;
 import org.andengine.extension.tmx.TMXProperties;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTileProperty;
@@ -28,18 +32,18 @@ import org.andengine.extension.tmx.util.exception.TMXLoadException;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
-import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
-import org.andengine.util.Constants;
+//import org.andengine.util.Constants;
 import org.andengine.util.debug.Debug;
 import org.andengine.engine.handler.physics.PhysicsHandler;
-import org.andengine.input.touch.TouchEvent;
 
 
 
 
 import org.andengine.opengl.texture.region.ITextureRegion;
+
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
 import android.opengl.GLES20;
 
@@ -82,8 +86,8 @@ public class Main extends SimpleBaseGameActivity {
 	
 	private int pWaypointIndex;
 	
-	private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
-	private IEntity tasto_A;
+	//private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
+	//private IEntity tasto_A;
 	
 	
 	
@@ -140,16 +144,27 @@ public class Main extends SimpleBaseGameActivity {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////	 hud 	////////////////////////////////////////////		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	/*	
-		HUD hud = new HUD();
-		 hud.attachChild(tasto_A);
-		 mBoundChaseCamera.setHUD(hud);
+
+		/* 
+		 HUD myHUD;
+		myHUD = new HUD();
+		mBoundChaseCamera.setHUD(myHUD);
+		myHUD.attachChild(tasto_A);
 		
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        
+		
+		
+		
+		
+		
+		/* per calcolare le coordinate del player per centrarlo alla camera */
+		final float centerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getWidth()) / 2;
+		final float centerY = (CAMERA_HEIGHT - this.mPlayerTextureRegion.getHeight()) / 2;
+
+		/* creare il player. */
+		final AnimatedSprite player = new AnimatedSprite(centerX, centerY, this.mPlayerTextureRegion, this.getVertexBufferObjectManager());
 		
 		
 		
@@ -162,8 +177,12 @@ public class Main extends SimpleBaseGameActivity {
 				@Override
 				public void onTMXTileWithPropertiesCreated(final TMXTiledMap pTMXTiledMap, final TMXLayer pTMXLayer, final TMXTile pTMXTile, final TMXProperties<TMXTileProperty> pTMXTileProperties) {
 					/* We are going to count the tiles that have the property "cactus=true" set. */
-					if(pTMXTileProperties.containsTMXProperty("cactus", "true")) {
-						Main.this.mCactusCount++;
+					if(pTMXTileProperties.containsTMXProperty("wall", "true")) {
+						
+						//fermo il personaggio
+						player.stopAnimation();
+						System.out.println("_________________________");
+						
 					}
 				}
 			});
@@ -185,13 +204,58 @@ public class Main extends SimpleBaseGameActivity {
 		/* per fare in modo che la camera non superi TMXTiledMap */
 		this.mBoundChaseCamera.setBounds(0, 0, tmxLayer.getHeight(), tmxLayer.getWidth());
 		this.mBoundChaseCamera.setBoundsEnabled(true);
+		
+		
+		
+		
+		
+		
+		
+	/*	///////////////////////////////////////////////////////////////////////////////////////////////
+		// Add all TMX objects to map
+		final ArrayList<TMXObjectGroup> groups =
+		  mTMXTiledMap.getTMXObjectGroups();
 
-		/* per calcolare le coordinate del player per centrarlo alla camera */
-		final float centerX = (CAMERA_WIDTH - this.mPlayerTextureRegion.getWidth()) / 2;
-		final float centerY = (CAMERA_HEIGHT - this.mPlayerTextureRegion.getHeight()) / 2;
+		ArrayList<TMXObject> objects;
 
-		/* creare il player. */
-		final AnimatedSprite player = new AnimatedSprite(centerX, centerY, this.mPlayerTextureRegion, this.getVertexBufferObjectManager());
+		for(final TMXObjectGroup group: groups) {
+		  objects = group.getTMXObjects();
+		  for(final TMXObject object : objects) {
+		    String type = ÒÓ;
+		    if(group.getTMXObjectGroupProperties().size() > 0) {
+		      type = group.getTMXObjectGroupProperties().get(0).getValue();
+		    }
+
+		    HashMap<String,String> properties =
+		      new HashMap<String,String>();
+		    int size = object.getTMXObjectProperties().size();
+		    for(int i=0;i<size;i++) {
+		      properties.put(object.getTMXObjectProperties().get(i).getName(),
+		        object.getTMXObjectProperties().get(i).getValue());
+		    }
+
+		    if(properties.containsKey(ÒtypeÓ)) {
+		      type = properties.get(ÒtypeÓ);
+		    }
+
+		    Entities.addEntity(
+		      this,
+		      mScene,
+		      object.getX(),
+		      object.getY(),
+		      object.getWidth(),
+		      object.getHeight(),
+		      type,
+		      properties
+		    );
+		  }
+		}
+		
+		
+
+		/////////////////////////////////////////////////////////////////////////////////////////////// */
+
+		
 		
 		
 		
@@ -376,7 +440,7 @@ public class Main extends SimpleBaseGameActivity {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 		
 
-		/* Now we are going to create a rectangle that will  always highlight the tile below the feet of the pEntity. */
+		/* Now we are going to create a rectangle that will  always highlight the tile below the feet of the pEntity. 
 	//	final Rectangle currentTileRectangle = new Rectangle(0, 0, this.mTMXTiledMap.getTileWidth(), this.mTMXTiledMap.getTileHeight(), this.getVertexBufferObjectManager());
 	//	currentTileRectangle.setColor(1, 0, 0, 0.25f);
 	//	scene.attachChild(currentTileRectangle); 
@@ -387,10 +451,10 @@ public class Main extends SimpleBaseGameActivity {
 
 			@Override
 			public void onUpdate(final float pSecondsElapsed) {
-				/* Get the scene-coordinates of the players feet. */
+				// Get the scene-coordinates of the players feet. 
 				final float[] playerFootCordinates = player.convertLocalToSceneCoordinates(12, 31);
 
-				/* Get the tile the feet of the player are currently waking on. */
+				// Get the tile the feet of the player are currently waking on. 
 				final TMXTile tmxTile = tmxLayer.getTMXTileAt(playerFootCordinates[Constants.VERTEX_INDEX_X], playerFootCordinates[Constants.VERTEX_INDEX_Y]);
 				if(tmxTile != null) {
 					// tmxTile.setTextureRegion(null); //<-- Rubber-style removing of tiles =D 
@@ -400,7 +464,10 @@ public class Main extends SimpleBaseGameActivity {
 			}
 			
 
-		});
+		});*/
+		
+		
+		
 		scene.attachChild(player);
 		
 		return scene;
@@ -425,48 +492,7 @@ public class Main extends SimpleBaseGameActivity {
 	 
 	 
 	 
-	/* 
-	 
-	 private void createUnwalkableObjects(TMXTiledMap map){
-         // Loop through the object groups
-          for(final TMXObjectGroup group: this.mTMXTiledMap.getTMXObjectGroups()) {
-                  if(group.getTMXObjectGroupProperties().containsTMXProperty("wall", "true")){
-                          // This is our "wall" layer. Create the boxes from it
-                          for(final TMXObject object : group.getTMXObjects()) {
-                                 final Rectangle rect = new Rectangle(object.getX(), object.getY(),object.getWidth(), object.getHeight(), null, null);
-                                 final FixtureDef boxFixtureDef = PhysicsFactory.createFixtureDef(0, 0, 1f);
-                                 PhysicsFactory.createBoxBody(this.mPhysicsWorld, rect, BodyType.StaticBody, boxFixtureDef);
-                                 rect.setVisible(false);
-                                 mScene.attachChild(rect);
-                          }
-                  }
-          }
- }
-	 
-	 
-	 
 
- private void addBounds(float width, float height){
-         final Shape bottom = new Rectangle(0, height - 2, width, 2, null, null);
-         bottom.setVisible(false);
-         final Shape top = new Rectangle(0, 0, width, 2, null, null);
-         top.setVisible(false);
-         final Shape left = new Rectangle(0, 0, 2, height, null, null);
-         left.setVisible(false);
-         final Shape right = new Rectangle(width - 2, 0, 2, height, null, null);
-         right.setVisible(false);
-
-         final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0, 1f);
-         PhysicsFactory.createBoxBody(this.mPhysicsWorld, (IAreaShape) bottom, BodyType.StaticBody, wallFixtureDef);
-         PhysicsFactory.createBoxBody(this.mPhysicsWorld, top, BodyType.StaticBody, wallFixtureDef);
-         PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
-         PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
-
-         this.mScene.attachChild(bottom);
-         this.mScene.attachChild(top);
-         this.mScene.attachChild(left);
-         this.mScene.attachChild(right);
- } */
 
 	
 

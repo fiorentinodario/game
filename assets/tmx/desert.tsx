@@ -3,7 +3,7 @@
 	<image source="gfx/desert_tiled.png"/>
 	<tile id="30">
 		<properties>
-			<property name="cactus" value="true"/>
+			<property name="wall" value="true"/>
 		</properties>
 	</tile>
 </tileset>
