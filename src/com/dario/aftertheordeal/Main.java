@@ -3,22 +3,22 @@ package com.dario.aftertheordeal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.andengine.audio.sound.Sound;
+import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.camera.BoundCamera;
+import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.DigitalOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl.IOnScreenControlListener;
-//import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 
 
-import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.shape.Shape;
 import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
-import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
 import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
@@ -32,18 +32,23 @@ import org.andengine.extension.tmx.util.exception.TMXLoadException;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
-//import org.andengine.util.Constants;
 import org.andengine.util.debug.Debug;
 import org.andengine.engine.handler.physics.PhysicsHandler;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
 
 
 
 
 import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.util.GLState;
 
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+
+
+
 
 import android.opengl.GLES20;
 
@@ -63,8 +68,11 @@ public class Main extends SimpleBaseGameActivity {
 	// Constants
 	// ===========================================================
 
-	private static final int CAMERA_WIDTH = 480;
-	private static final int CAMERA_HEIGHT = 320;
+	private static final int CAMERA_WIDTH = 800;//480
+	private static final int CAMERA_HEIGHT = 480;//320
+	
+	//private final int CAMERA_WIDTH = 720;
+	//private final int CAMERA_HEIGHT = 480;
 
 	// ===========================================================
 	// Fields
@@ -85,23 +93,36 @@ public class Main extends SimpleBaseGameActivity {
 	private DigitalOnScreenControl mDigitalOnScreenControl;
 	
 	private int pWaypointIndex;
+
+
 	
-	//private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
-	//private IEntity tasto_A;
-	
-	
-	
-	
-	/*						 
-	 private BitmapTextureAtlas splashTextureAtlas;
-	 private ITextureRegion splashTextureRegion;
-	 private Sprite splash;
-	
-							 */
+	//Sound of the car engine
+		private Sound engineSound;
+		//Path of this sound
+		private String engineSoundPath = "aftertheordeal.mp3";
+		
+		
+		private BitmapTextureAtlas splashTextureAtlas;
+		private TextureRegion splashTextureRegion;
+		private Scene splashScene;
+		private Sprite splash;
+
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		
@@ -113,11 +134,20 @@ public class Main extends SimpleBaseGameActivity {
 	
 	
 
+	
+	
+	
+	
+	
+	
+	
+
 	@Override
 	public void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 72, 128, TextureOptions.DEFAULT);
 		this.mPlayerTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "player.png", 0, 0, 3, 4);
+
 		this.mBitmapTextureAtlas.load();
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,9 +157,36 @@ public class Main extends SimpleBaseGameActivity {
 		this.mOnScreenControlTexture.load();
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
-		
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+        splashTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 800, 480, TextureOptions.DEFAULT);
+        splashTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(splashTextureAtlas, this, "splashscreen.png", 0, 0);
+        splashTextureAtlas.load();
+
+
 
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	public void onLoadResources() {
+
+		//Try to load the music of the game
+		try {
+			engineSound = SoundFactory.createSoundFromAsset(mEngine
+					.getSoundManager(), this, "raw/" + engineSoundPath);
+			engineSound.setLooping(true);
+			engineSound.setVolume(0.5f);
+		} catch (Exception e) {
+
+		}
+	}
+	
+	
 	
 	
 	
@@ -137,15 +194,15 @@ public class Main extends SimpleBaseGameActivity {
 	@Override
 	public Scene onCreateScene() {
 		
-
+		//mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
 		
-		
+		initSplashScene();
 		
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////	 hud 	////////////////////////////////////////////		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		/* 
+	/*	
 		 HUD myHUD;
 		myHUD = new HUD();
 		mBoundChaseCamera.setHUD(myHUD);
@@ -171,7 +228,7 @@ public class Main extends SimpleBaseGameActivity {
 		
 		
 		this.mEngine.registerUpdateHandler(new FPSLogger());
-		Scene scene = new Scene();
+		final Scene scene = new Scene();
 		try {
 			final TMXLoader tmxLoader = new TMXLoader(this.getAssets(), this.mEngine.getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, this.getVertexBufferObjectManager(), new ITMXTilePropertiesListener() {
 				@Override
@@ -211,7 +268,7 @@ public class Main extends SimpleBaseGameActivity {
 		
 		
 		
-	/*	///////////////////////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////
 		// Add all TMX objects to map
 		final ArrayList<TMXObjectGroup> groups =
 		  mTMXTiledMap.getTMXObjectGroups();
@@ -221,7 +278,7 @@ public class Main extends SimpleBaseGameActivity {
 		for(final TMXObjectGroup group: groups) {
 		  objects = group.getTMXObjects();
 		  for(final TMXObject object : objects) {
-		    String type = “”;
+		    String type = "";
 		    if(group.getTMXObjectGroupProperties().size() > 0) {
 		      type = group.getTMXObjectGroupProperties().get(0).getValue();
 		    }
@@ -234,13 +291,13 @@ public class Main extends SimpleBaseGameActivity {
 		        object.getTMXObjectProperties().get(i).getValue());
 		    }
 
-		    if(properties.containsKey(“type”)) {
-		      type = properties.get(“type”);
+		    if(properties.containsKey("type")) {
+		      type = properties.get("type");
 		    }
 
 		    Entities.addEntity(
 		      this,
-		      mScene,
+		      scene,
 		      object.getX(),
 		      object.getY(),
 		      object.getWidth(),
@@ -250,11 +307,14 @@ public class Main extends SimpleBaseGameActivity {
 		    );
 		  }
 		}
+
+		///////////////////////////////////////////////////////////////////////////////////////////////
+
 		
 		
-
-		/////////////////////////////////////////////////////////////////////////////////////////////// */
-
+		
+		
+		
 		
 		
 		
@@ -263,6 +323,12 @@ public class Main extends SimpleBaseGameActivity {
 		final PhysicsHandler physicsHandler = new PhysicsHandler(player);
 		player.registerUpdateHandler(physicsHandler);
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		
+
+		
+		
+		
 		
 		this.mBoundChaseCamera.setChaseEntity(player);
 
@@ -386,7 +452,7 @@ public class Main extends SimpleBaseGameActivity {
 		this.mDigitalOnScreenControl.getControlKnob().setAlpha(0f);
 		this.mDigitalOnScreenControl.refreshControlKnobPosition();
 
-		scene.setChildScene(this.mDigitalOnScreenControl);
+		//scene.setChildScene(this.mDigitalOnScreenControl);
 		
 		
 		
@@ -466,9 +532,34 @@ public class Main extends SimpleBaseGameActivity {
 
 		});*/
 		
+		scene.attachChild(splashScene);
+		mEngine.registerUpdateHandler(new TimerHandler(7f, new ITimerCallback() 
+		{
+            
+
+			public void onTimePassed(final TimerHandler pTimerHandler) 
+            {
+                mEngine.unregisterUpdateHandler(pTimerHandler);
+                  
+                splash.detachSelf();
+              
+                scene.detachChild(splashScene);
+        		scene.attachChild(player);
+        		scene.setChildScene(mDigitalOnScreenControl);
+                
+                
+            }
+		}));
+  
 		
 		
-		scene.attachChild(player);
+		
+		
+		
+		
+		
+		//scene.attachChild(splashScene);
+		//scene.attachChild(player);
 		
 		return scene;
 
@@ -482,11 +573,40 @@ public class Main extends SimpleBaseGameActivity {
 	
 	
 	
-	 @Override
+	 private void initSplashScene() {
+		 splashScene = new Scene();
+	    	splash = new Sprite(0, 0, splashTextureRegion, mEngine.getVertexBufferObjectManager())
+	    	{
+	    		@Override
+	            protected void preDraw(GLState pGLState, Camera pCamera) 
+	    		{
+	                super.preDraw(pGLState, pCamera);
+	                pGLState.enableDither();
+	            }
+	    	};
+	    	
+	    	splash.setScale(1.5f);
+	    	splash.setPosition((CAMERA_WIDTH - splash.getWidth()) * 0.5f, (CAMERA_HEIGHT - splash.getHeight()) * 0.5f);
+	    	splashScene.attachChild(splash);
+		
+	} 
+
+
+
+
+
+
+
+
+
+
+
+	@Override
 	    public void onBackPressed() {
 	            super.onBackPressed();
 	            this.finish();
 	    }
+	 
 	 
 	 
 	 

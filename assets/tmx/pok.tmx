@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="100" height="100" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="pok" tilewidth="16" tileheight="16" spacing="1">
+  <image source="gfx/pok.bmp" width="1036" height="475"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJztmltqFFEURbv6MQvBF8boIAQHIDgAMWpUHIQjEB2AKGo0v/44Aj90CPrnIz7iNDxNElK7+1ZVulNV+ya9FmwI3CZJr5WqItCDAeTE2cnq7CTgdkQPxe2IHorbET0UtyN6KG5H9FDcjuihuB3RQ3E7oofidkQPxe2IHorbET0UtyN6KG5H9FDcjuihuB3RQ3E7oofidkQPxe2IHorbET0UtyN6KG5H9FDcjuihuB3RQ3E7oofidkQPxe2IHorbET0UtyN6KG5H9FDcjuihuB3RQ3E7oofidkQPxe2IHorbET0UtyN6KG5H9FDcjuihuB3RQ3E7oofidkQPAAAAAAAAAAAAAAAAAADIgY/FYLA+6nef4md+LtzvPE/uh58z4/TW4uxyyy2uxK7GhkP3O8+Tuh6bo73zBzWvWXQP43tt06OSph5bsbct7h09aqnr8S3Ovh9hP2I/F9gOPSqp69HViiE9qqi6Hx24a/NedbBr9Kjk0Xh+14eHPT6M0q857h7TI8nvcLMx0d0oDnvcLObP2xif400z7VFeVQ/3Z6HpQQ8H9MgLeuTFIj0uVsztd9V73C2NHu1Cj7ygR17w/MgLeuQFPfIi1eNJNHi6v2f8/9ErFybN22g4d/tdtR5Nc/s9TT224x71PrFf+0udzc7tt2nnTlCPnfH83/uL0td/43w39i/xuum2MvB9mq6PVI9FRo92WabHnzE9umKZHue5Pjqj3OPOjPeqZ8dtenQGz4+8qOtxKbZGj16Z7fGy9PW92CY9eqXu+ngde0OPXuH5kRfTHreO6P4VPTpn2uM510c2cL/Kiy/x+3095paBHmn+A1qdIgs=
+  </data>
+ </layer>
+</map>
